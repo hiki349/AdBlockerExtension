@@ -3,20 +3,15 @@
   "name": "Google Search Modifier",
   "version": "1.0",
   "description": "Replace text in search result Google.",
-  "permissions": [
-    "scripting"
-  ],
-  "host_permissions": [
-    "https://www.google.com/search*"
-  ],
+  "permissions": ["scripting"],
+  "host_permissions": ["https://www.google.com/search*"],
+  "background": {
+    "service_worker": "background.js"
+  },
   "content_scripts": [
     {
-      "matches": [
-        "https://www.google.com/search*"
-      ],
-      "js": [
-        "content.js"
-      ],
+      "matches": ["https://www.google.com/search*"],
+      "js": ["content.js"],
       "run_at": "document_idle"
     }
   ]
