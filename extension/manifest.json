@@ -9,14 +9,14 @@
     "tabs",
     "scripting"
   ],
-  "host_permissions": [
-    "http://*/*",
-    "https://*/*"
-  ],
+  "host_permissions": ["http://*/*", "https://*/*"],
   "background": {
     "service_worker": "background.js"
   },
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self';"
+  },
+  "action": {
+    "default_popup": "popup.html"
   }
 }
