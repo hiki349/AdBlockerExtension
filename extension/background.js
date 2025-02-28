@@ -16,7 +16,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
 
 async function loadFiltersFromServer() {
   try {
-    const response = await fetch("http://localhost:3000");
+    const response = await fetch("https://c413-195-238-117-76.ngrok-free.app");
     const rules = await response.json();
 
     return await updateBlockingRules(rules);
@@ -27,20 +27,21 @@ async function loadFiltersFromServer() {
 
 async function getDomainListWithCustomJs() {
   try {
-    const response = await fetch("http://localhost:3000/custom-list");
+    const response = await fetch(
+      "https://c413-195-238-117-76.ngrok-free.app/custom-list"
+    );
     const data = await response.json();
 
     return data;
   } catch (error) {
-    console.error("Ошибка при загрузкесписка доменов с сервера:", error);
+    console.error("Ошибка при загрузке списка доменов с сервера:", error);
   }
 }
 
 async function updateBlockingRules(data) {
   return chrome.declarativeNetRequest.getDynamicRules((rules) => {
-
-    const rulesId = rules.map(rule => rule?.id)
-    const filteredRules = data.filter(item => !rulesId.includes(item.id))
+    const rulesId = rules.map((rule) => rule?.id);
+    const filteredRules = data.filter((item) => !rulesId.includes(item.id));
     chrome.declarativeNetRequest.updateDynamicRules({
       addRules: filteredRules,
     });
@@ -66,26 +67,33 @@ async function blockAds(isEnabled) {
 }
 
 chrome.webNavigation.onCompleted.addListener(
-  (details) => {
+  async (details) => {
     const url = new URL(details.url);
     const domain = url.hostname;
-    const scriptSrc = domainListWithCustomJs?.[domain];
+    const scriptURL = domainListWithCustomJs?.[domain];
 
-    if (scriptSrc) {
-      chrome.scripting.executeScript({
-        target: { tabId: details.tabId },
-        func: injectScript,
-        args: [scriptSrc],
-      });
+    if (scriptURL) {
+      try {
+        chrome.scripting.executeScript(
+          {
+            target: { tabId: details.tabId },
+            files: ["content.js"],
+          },
+          () => chrome.tabs.sendMessage(details.tabId, { scriptURL })
+        );
+      } catch (error) {
+        console.error("Ошибка загрузки скрипта:", error);
+      }
     }
   },
-  { scheme: ["http", "https"] }
+  { url: [{ schemes: ["http", "https"] }] }
 );
 
-function injectScript(scriptSrc) {
-  const script = document.createElement("script");
-  script.src = scriptSrc;
-  document.body.appendChild(script);
+async function injectScript(scriptSrc) {
+  const response = await fetch(scriptSrc);
+  const data = await response.text();
+
+  eval(data);
 }
 
 async function loadData() {

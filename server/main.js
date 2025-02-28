@@ -4,12 +4,17 @@ import { readFile } from "fs";
 const server = createServer((req, res) => {
   if (req.url === "/script.js") {
     const filePath = "script.js";
-    readFile(filePath, (err, data) => {
+    readFile(filePath, "utf8", (err, data) => {
       if (err) {
         res.writeHead(500, { "Content-Type": "text/plain" });
         res.end("Server error: unable to read file.");
       } else {
-        res.writeHead(200, { "Content-Type": "application/javascript" });
+        res.writeHead(200, {
+          "Content-Type": "application/javascript",
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type",
+        });
         res.end(data);
       }
     });
@@ -20,7 +25,7 @@ const server = createServer((req, res) => {
     res.setHeader("Content-Type", "application/json");
 
     const data = {
-      "www.comss.ru": "http://localhost:3000/script.js",
+      "tortino.com.ua": "https://c413-195-238-117-76.ngrok-free.app/script.js",
     };
     res.end(JSON.stringify(data));
 
